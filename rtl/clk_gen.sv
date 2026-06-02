@@ -43,7 +43,7 @@ module clk_gen(
 
 //generating t_clk for tx_clk
 /*
-- suppose baud is 9600, the tx_max = 5208, tx_max/2 is 2604 then tx_count goes from 0 to 2603 
+- suppose baud is 9600, then tx_max = 5208, tx_max/2 is 2604 then tx_count goes from 0 to 2603 
 - at the clk tick 1, tx_count is at 0 so if block runs and tx_count inc to 1 
 - so in 2604 clks ticks, tx_count is at 2603 so if block runs and tx_count inc to 2604
 - at the 2605th clk tick, count value is 2604 so else block runs
