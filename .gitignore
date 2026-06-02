@@ -1,0 +1,35 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# VS Code specific
+.vscode/
+
+# ---------------------------------------------------
+# Questasim / Modelsim specific files to ignore
+# ---------------------------------------------------
+# Ignore the default compilation library folder
+work/
+
+# Ignore log and transcript files
+transcript
+*.log
+
+# Ignore waveform simulation data files (these are huge)
+*.wlf
+wlft*
+wave.do
+
+# Ignore compilation databases and temporary files
+*.vstf
+*.mpf
+*.mti
+*.dbg
+*.bak
+*.vcd
+modelsim.ini
