@@ -1,4 +1,4 @@
-This project showcases the design of - 
+This project showcases the design and verification of - 
 
 - an UART Clk Generator that can produce variable transmitter clk and receiver clk signals according to varibale baud rate.
 - an UART Controller with the integration of the above clock generator
