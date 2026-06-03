@@ -73,3 +73,15 @@ module clk_gen(
     assign tx_clk = t_clk;
 
 endmodule
+
+////////////////////////////////////////////////////////////////////////////
+
+/////interface//////
+
+interface clk_if;
+
+    logic clk, rst;
+    logic [16:0] baud;
+    logic tx_clk;
+
+endinterface
