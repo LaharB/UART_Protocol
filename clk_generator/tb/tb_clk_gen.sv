@@ -1,9 +1,9 @@
-`timescale 1ns/1ps;
+`timescale 1ns/1ps
 `include "uvm_macros.svh"
-`include uvm_package::*;
+import uvm_package::*;
 
 //enum for operation mode
-tyepdef enum bit [1:0] {reset_asserted = 0, random_baud = 1} oper_mode;
+typedef enum bit [1:0] {reset_asserted = 0, random_baud = 1} oper_mode;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //1.transaction class - dynamic component - UVM_OBJECT is PARENT
@@ -58,7 +58,7 @@ endclass
 /////////////////////////////////////////////////////////////////////////////////////////
 //2.2 Variable baud SEQ
 class variable_baud extends uvm_sequence#(transaction);
-    `uvm_object_utils(varibale_baud)
+    `uvm_object_utils(variable_baud)
 
     transaction tr; //data container instance to send the randomized data to driver
 
@@ -211,7 +211,7 @@ class scoreboard extends uvm_scoreboard;
     endfunction
 
     //write method 
-    virtual function void write(tranasction tr);
+    virtual function void write(transaction tr);
         count = period/20; //Tbaud(Period)/Tclk where fclk = 50Mhz
         baudcount = count; //just passing
         `uvm_info("SCO", $sformatf("Baud: %0d, count: %0f", tr.baud, count), UVM_NONE);
@@ -284,7 +284,7 @@ class agent extends uvm_agent;
     virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         //object creation for seqr, d and m instances
-        seqr = uvm_sequencer#(transaction)::type_id::("seqr", this); //2 args as uvm_comp type
+        seqr = uvm_sequencer#(transaction)::type_id::create("seqr", this); //2 args as uvm_comp type
         d = driver::type_id::create("d", this); //2 arg as uvm_comp type
         m = monitor::tyep_id::create("m", this); //2 args as uvm_comp type
     endfunction
