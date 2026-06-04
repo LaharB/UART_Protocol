@@ -303,9 +303,29 @@ endclass
 class env extends uvm_environment;
     `uvm_component_utils(env)
 
+    //instances
+    agent a;
     scoreboard sco;
 
     //constr for env
+    function new(input string path = "env", uvm_component parent = null);
+        super.new(path, parent);
+    endfunction
 
+    //build_phase
+    virtual function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        //object creation
+        a   = agent::type_id::create("a", this); //2 args as uvm_comp type
+        sco = scoreboard::tyep_id::create("sco", this); //2 args uvm_comp type
+    endfunction
+
+    //connect phase to connect mon and sco
+    virtual function void connect_phase(uvm_phase phase);
+        super.connect_phase(phase);
+        a.m.send.connect(sco.recv);
+    endfunction
 
 endclass
+
+/////////////////////////////////////////////////////////////////////////////////////////
