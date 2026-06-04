@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 `include "uvm_macros.svh"
-import uvm_package::*;
+import uvm_pkg::*;
 
 //enum for operation mode
 typedef enum bit [1:0] {reset_asserted = 0, random_baud = 1} oper_mode;
@@ -100,7 +100,7 @@ class driver extends uvm_driver#(transaction);
         super.build_phase(phase);
         tr = transaction::type_id::create("tr"); //1 arg as uvm_object type
         //getting access to interface through tb
-        if(!uvm_config#(virtual clk_if)::get("this", "", "vif", vif)) //this gives whole path - uvm_test_top.env.agent.drv.aif
+        if(!uvm_config_db#(virtual clk_if)::get("this", "", "vif", vif)) //this gives whole path - uvm_test_top.env.agent.drv.aif
             uvm_error("DRV", "Unable to acess Interface");
     endfunction
 
@@ -113,16 +113,16 @@ class driver extends uvm_driver#(transaction);
                     if(tr.oper == reset_asserted)
                         begin
                             vif.rst <= 1'b1; //asserting rst manually in the DUT 
-                            @(posedge clk); //wait for 1 clk tick
+                            @(posedge vif.clk); //wait for 1 clk tick
                         end
-                    else if(tr.oper == varibale_baud)
+                    else if(tr.oper == variable_baud)
                         begin
                             `uvm_info("DRV", $sformat("Baud: %0d", tr.baud), UVM_NONE);
                             vif.rst  <= 1'b0; //manually deasserting rst in the DUT
                             vif.baud <= tr.baud; //passing the random baud to DUT 
                             //wait for 1 clk tick and 2 tx_clk ticks so that DUT gets enough to process the stimuli 
-                            @(posedge clk);
-                            repeat(2) @(posedge tx_clk);        
+                            @(posedge vif.clk);
+                            repeat(2) @(posedge vif.tx_clk);        
                         end
                seq_item_port.item_done(); //inform the seqr that packet has been applied to DUT and send next packet 
             end
@@ -152,7 +152,7 @@ class monitor extends uvm_monitor;
         send = new("send", this); //constructor for send port inside build_phase
         tr = transaction::type_id::create("tr"); //1 arg as uvm_object type
         //getting access to interface through tb
-        if(!uvm_config#(virtual clk_if)::get("this", "", "vif", vif)); //uvm_test_top.env.agent.drv.aif
+        if(!uvm_config_db#(virtual clk_if)::get("this", "", "vif", vif)); //uvm_test_top.env.agent.drv.aif
             uvm_error("MON", "Unable to acess Interface");
     endfunction
 
@@ -160,7 +160,7 @@ class monitor extends uvm_monitor;
     virtual task run_phase(uvm_phase phase);
         forever 
             begin
-                @(posedge clk); //wait for 1 clk tick as in driver 
+                @(posedge vif.clk); //wait for 1 clk tick as in driver 
                 if(vif.rst)
                     begin
                         tr.oper = reset_asserted;
@@ -212,7 +212,7 @@ class scoreboard extends uvm_scoreboard;
 
     //write method 
     virtual function void write(transaction tr);
-        count = period/20; //Tbaud(Period)/Tclk where fclk = 50Mhz
+        count = tr.period/20; //Tbaud(Period)/Tclk where fclk = 50Mhz
         baudcount = count; //just passing
         `uvm_info("SCO", $sformatf("Baud: %0d, count: %0f", tr.baud, count), UVM_NONE);
 
@@ -220,44 +220,44 @@ class scoreboard extends uvm_scoreboard;
         case(tr.baud)
             4800: begin
                 if(baudcount == 10418) //10416 + 2
-                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE)
                 else
-                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE)
             end
 
             9600: begin
                 if(baudcount == 5210) //5208 + 2
-                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE)
                 else
-                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE)
             end
 
             14400: begin
                 if(baudcount == 3474) //3472 + 2
-                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE)
                 else
-                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE)
             end
 
             19200: begin
                 if(baudcount == 2606) //2604 + 2
-                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE)
                 else
-                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE)
             end
 
             38400: begin
                 if(baudcount == 1304) //1302 + 2
-                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE)
                 else
-                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE)
             end
 
             57600: begin
                 if(baudcount == 870) //868 + 2
-                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE)
                 else
-                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE)
             end
         endcase
     endfunction
@@ -286,7 +286,7 @@ class agent extends uvm_agent;
         //object creation for seqr, d and m instances
         seqr = uvm_sequencer#(transaction)::type_id::create("seqr", this); //2 args as uvm_comp type
         d = driver::type_id::create("d", this); //2 arg as uvm_comp type
-        m = monitor::tyep_id::create("m", this); //2 args as uvm_comp type
+        m = monitor::type_id::create("m", this); //2 args as uvm_comp type
     endfunction
 
     //funct + super for connect phase to connect seqr and drv
@@ -300,7 +300,7 @@ endclass
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //8.ENVIRONMENT - uvm_comp 
 //inisde env, we have agent and we connect mon and sco
-class env extends uvm_environment;
+class env extends uvm_env;
     `uvm_component_utils(env)
 
     //instances

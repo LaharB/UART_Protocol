@@ -1,4 +1,4 @@
-mod"        endule clk_gen(
+module clk_gen(
     input clk, rst,
     input [16:0] baud,
     output tx_clk //slower clk 
