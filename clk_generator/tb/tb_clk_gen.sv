@@ -96,7 +96,7 @@ class driver extends uvm_driver#(transaction);
     endfunction 
 
     //function for build_phase - use function + super as build_phase does not consume time
-    virtual function build_phase(uvm_phase phase);
+    virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         tr = transaction::type_id::create("tr"); //1 arg as uvm_object type
         //getting access to interface through tb
@@ -147,8 +147,9 @@ class mon extends uvm_monitor;
     endfunction 
 
     //function + super for build_phase
-    virtual function build_phase(uvm_phase phase);
+    virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
+        send = new("send", this); //constructor for send port inside build_phase
         tr = transaction::type_id::create("tr"); //1 arg as uvm_object type
         //getting access to interface through tb
         if(!uvm_config#(virtual clk_if)::get("this", "", "vif", vif)); //uvm_test_top.env.agent.drv.aif
@@ -193,9 +194,26 @@ class sco extends uvm_scoreboard;
     `uvm_component_utils(scoreboard)
 
     real count = 0; //to calculate the count value by using period
-    real baudcount; //
+    real baudcount; 
 
-    uvm_analysis_port#(transaction, sco  
+    //2 args - datatype and the class name where write method is added
+    uvm_analysis_imp#(transaction, sco) recv; //analysis implementation to connect to mon
+    
+    //constrcutor for uvm_component
+    function new(input string path = "sco", uvm_component parent = null);
+        super.new(path, parent);
+    endfunction
+
+    //build_phase
+    virtual function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        recv = new("recv", this); //constr for recv imp inside build_phase
+    endfunction
+
+    //
+
+
+
 
 
 
