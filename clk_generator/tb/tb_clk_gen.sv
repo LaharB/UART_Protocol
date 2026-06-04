@@ -317,7 +317,7 @@ class env extends uvm_environment;
         super.build_phase(phase);
         //object creation
         a   = agent::type_id::create("a", this); //2 args as uvm_comp type
-        sco = scoreboard::tyep_id::create("sco", this); //2 args uvm_comp type
+        sco = scoreboard::type_id::create("sco", this); //2 args uvm_comp type
     endfunction
 
     //connect phase to connect mon and sco
@@ -388,7 +388,7 @@ module tb();
     end
 
     //clk generation
-    always #10 clk vif.clk = ~vif.clk; //50 MHz, 20ns Period 
+    always #10 vif.clk = ~vif.clk; //50 MHz, 20ns Period 
 
     //run the test
     initial begin
