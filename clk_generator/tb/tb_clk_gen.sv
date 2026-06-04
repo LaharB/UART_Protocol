@@ -131,7 +131,7 @@ endclass
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //4.MONITOR - static component(remains till the end of sim) - UVM_COMPONENT is PARENT - 2 args
-class monitor extends uvm_monitor;
+class mon extends uvm_monitor;
     `uvm_component_utils(monitor)
 
     transaction tr; //data container to store response of DUT and send it to SCO
@@ -142,7 +142,7 @@ class monitor extends uvm_monitor;
     real toff = 0; 
 
     //constructor for uvm_monitor
-    function new(input string path = "monitor", uvm_component parent = "null");//2 args
+    function new(input string path = "mon", uvm_component parent = "null");//2 args
         super.new(path, parent);
     endfunction 
 
@@ -189,4 +189,14 @@ endclass
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //5.SCOREBOARD - static component(remains till the end of sim) - UVM_COMPONENT is PARENT - 2 args 
+class sco extends uvm_scoreboard;
+    `uvm_component_utils(scoreboard)
 
+    real count = 0; //to calculate the count value by using period
+    real baudcount; //
+
+    uvm_analysis_port#(transaction, sco  
+
+
+
+endclass
