@@ -131,7 +131,7 @@ endclass
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //4.MONITOR - static component(remains till the end of sim) - UVM_COMPONENT is PARENT - 2 args
-class mon extends uvm_monitor;
+class monitor extends uvm_monitor;
     `uvm_component_utils(monitor)
 
     transaction tr; //data container to store response of DUT and send it to SCO
@@ -142,7 +142,7 @@ class mon extends uvm_monitor;
     real toff = 0; 
 
     //constructor for uvm_monitor
-    function new(input string path = "mon", uvm_component parent = "null");//2 args
+    function new(input string path = "monitor", uvm_component parent = "null");//2 args
         super.new(path, parent);
     endfunction 
 
@@ -190,14 +190,14 @@ endclass
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //5.SCOREBOARD - static component(remains till the end of sim) - UVM_COMPONENT is PARENT - 2 args 
-class sco extends uvm_scoreboard;
+class scoreboard extends uvm_scoreboard;
     `uvm_component_utils(scoreboard)
 
     real count = 0; //to calculate the count value by using period
     real baudcount; 
 
     //2 args - datatype and the class name where write method is added
-    uvm_analysis_imp#(transaction, sco) recv; //analysis implementation to connect to mon
+    uvm_analysis_imp#(transaction, scoreboard) recv; //analysis implementation to connect to mon
     
     //constrcutor for uvm_component
     function new(input string path = "sco", uvm_component parent = null);
@@ -271,6 +271,41 @@ class agent extends uvm_agent;
     `uvm_component_utils(agent)
 
     //inside agent, we have seqr, drv and mon
-    
+    uvm_sequencer#(transaction) seqr;
+    driver d;
+    monitor m;
+
+    //std constr for uvm_comp
+    function new(input string path = "agent", uvm_component parent = null);
+        super.new(path, parent);
+    endfunction
+
+    //func + super for build_phase 
+    virtual function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        //object creation for seqr, d and m instances
+        seqr = uvm_sequencer#(transaction)::type_id::("seqr", this); //2 args as uvm_comp type
+        d = driver::type_id::create("d", this); //2 arg as uvm_comp type
+        m = monitor::tyep_id::create("m", this); //2 args as uvm_comp type
+    endfunction
+
+    //funct + super for connect phase to connect seqr and drv
+    virtual function void connect_phase(uvm_phase phase);
+        super.connect_phase(phase);
+        d.seq_item_port.connect(seqr.seq_item_export); //connecting drv and seqr
+    endfunction
+
+endclass
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//8.ENVIRONMENT - uvm_comp 
+//inisde env, we have agent and we connect mon and sco
+class env extends uvm_environment;
+    `uvm_component_utils(env)
+
+    scoreboard sco;
+
+    //constr for env
+
 
 endclass
