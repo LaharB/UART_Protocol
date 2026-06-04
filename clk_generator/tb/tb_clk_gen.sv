@@ -367,3 +367,35 @@ class test extends uvm_test;
 endclass
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+//11.TESTBENCH - we give access of inteface to drv and mon
+//               generate clk
+//               run test class from tb - uvm_component 
+module tb();
+
+    clk_if vif(); //in tb, parenthesis are reqd for interface instance
+
+    //connectiong interface signals to DUT
+    clk_gen DUT(
+        .clk(vif.clk),
+        .rst(vif.rst),
+        .baud(vif.baud),
+        .tx_clk(vif.tx_clk)
+    );
+
+    //initialize clk 
+    initial begin
+        vif.clk = 1'b0;    
+    end
+
+    //clk generation
+    always #10 clk vif.clk = ~vif.clk; //50 MHz, 20ns Period 
+
+    //run the test
+    initial begin
+        //giving the access of interface 
+        uvm_config_db#(virtual clk_if)::set(null, "*", "vif", vif); //null gives the path - uvm_test_top.* i.e env.agent.drv and env.agent.mon 
+        //run test
+        run_test("test");
+    end
+
+endmodule
