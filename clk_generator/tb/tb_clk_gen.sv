@@ -309,7 +309,7 @@ class env extends uvm_environment;
 
     //constr for env
     function new(input string path = "env", uvm_component parent = null);
-        super.new(path, parent);
+        super.new(path, parent); //2 args
     endfunction
 
     //build_phase
@@ -329,3 +329,41 @@ class env extends uvm_environment;
 endclass
 
 /////////////////////////////////////////////////////////////////////////////////////////
+///9.TEST - we start the seqr from TEST using various sequences
+class test extends uvm_test;
+    `uvm_component_utils(test)
+
+    //instances of env and various sequences
+    env e;
+    variable_baud vbar;
+    reset_clk rclk;
+
+    //std constr for uvm_comp
+    function new(input string path = "test", uvm_component parent = null);
+        super.new(path, parent); //2 args
+    endfunction
+
+    //build_phase
+    virtual function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        //object creation
+        e    = env::type_id::create("e", this); //2 args as uvm_comp type
+        vbar = variable_baud::type_id::create("vbar"); //1 arg only as uvm_object
+        rclk = reset_clk::type_id::create("rclk"); //1 arg only as uvm_object
+    endfunction
+
+    //run_phase to start the seqr
+    virtual task run_phase(uvm_phase phase);
+        //to hold the simulator till all the sequences are over 
+        phase.raise_objection(this);
+        //start calls the body() inside resp SEQ and starts the seqr
+            vbar.start(e.a.seqr); 
+            #20;
+            //rclk.start(e.a.seqr);
+            //#20
+        phase.drop_objection(this);
+    endtask
+
+endclass
+
+/////////////////////////////////////////////////////////////////////////////////////////////
