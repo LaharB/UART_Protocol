@@ -204,17 +204,73 @@ class sco extends uvm_scoreboard;
         super.new(path, parent);
     endfunction
 
-    //build_phase
+    //function + super build_phase
     virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         recv = new("recv", this); //constr for recv imp inside build_phase
     endfunction
 
-    //
+    //write method 
+    virtual function void write(tranasction tr);
+        count = period/20; //Tbaud(Period)/Tclk where fclk = 50Mhz
+        baudcount = count; //just passing
+        `uvm_info("SCO", $sformatf("Baud: %0d, count: %0f", tr.baud, count), UVM_NONE);
 
+        //comparison 
+        case(tr.baud)
+            4800: begin
+                if(baudcount == 10418) //10416 + 2
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                else
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+            end
 
+            9600: begin
+                if(baudcount == 5210) //5208 + 2
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                else
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+            end
 
+            14400: begin
+                if(baudcount == 3474) //3472 + 2
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                else
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+            end
 
+            19200: begin
+                if(baudcount == 2606) //2604 + 2
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                else
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+            end
 
+            38400: begin
+                if(baudcount == 1304) //1302 + 2
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                else
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+            end
+
+            57600: begin
+                if(baudcount == 870) //868 + 2
+                    `uvm_info("SCO", "TEST PASSED", UVM_NONE);
+                else
+                    `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+            end
+        endcase
+    endfunction
+
+endclass
+
+////////////////////////////////////////////////////////////////////////////////////////
+//6.AGENT - uvm_component 
+//connect drv and seq 
+class agent extends uvm_agent;
+    `uvm_component_utils(agent)
+
+    //inside agent, we have seqr, drv and mon
+    
 
 endclass
