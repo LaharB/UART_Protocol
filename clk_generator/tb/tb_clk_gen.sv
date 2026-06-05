@@ -74,7 +74,7 @@ class variable_baud extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_object type, use instance name as path name 
                 start_item(tr); //send req to sequencer and wait_for_grant 
                 assert(tr.randomize);
-                tr.oper = variable_baud; //manually declaring value of oper
+                tr.oper = random_baud; //manually declaring value of oper
                 finish_item(tr); //send packet to sequencer and wait for item_done from driver      
             end
     endtask
@@ -91,7 +91,7 @@ class driver extends uvm_driver#(transaction);
     virtual clk_if vif; //for getting access to interface 
 
     //constructor for uvm_driver
-    function new(input string path = "driver", uvm_component parent = "null");//2 args
+    function new(input string path = "driver", uvm_component parent = null);//2 args
         super.new(path, parent);
     endfunction 
 
@@ -100,8 +100,8 @@ class driver extends uvm_driver#(transaction);
         super.build_phase(phase);
         tr = transaction::type_id::create("tr"); //1 arg as uvm_object type
         //getting access to interface through tb
-        if(!uvm_config_db#(virtual clk_if)::get("this", "", "vif", vif)) //this gives whole path - uvm_test_top.env.agent.drv.aif
-            uvm_error("DRV", "Unable to acess Interface");
+        if(!uvm_config_db#(virtual clk_if)::get(this , "", "vif", vif)) //this gives whole path - uvm_test_top.env.agent.drv.aif
+            `uvm_error("DRV", "Unable to acess Interface");
     endfunction
 
     //run_phase to drive stimulus to DUT
@@ -115,9 +115,9 @@ class driver extends uvm_driver#(transaction);
                             vif.rst <= 1'b1; //asserting rst manually in the DUT 
                             @(posedge vif.clk); //wait for 1 clk tick
                         end
-                    else if(tr.oper == variable_baud)
+                    else if(tr.oper == random_baud)
                         begin
-                            `uvm_info("DRV", $sformat("Baud: %0d", tr.baud), UVM_NONE);
+                            `uvm_info("DRV", $sformatf("Baud: %0d", tr.baud), UVM_NONE);
                             vif.rst  <= 1'b0; //manually deasserting rst in the DUT
                             vif.baud <= tr.baud; //passing the random baud to DUT 
                             //wait for 1 clk tick and 2 tx_clk ticks so that DUT gets enough to process the stimuli 
@@ -142,7 +142,7 @@ class monitor extends uvm_monitor;
     real toff = 0; 
 
     //constructor for uvm_monitor
-    function new(input string path = "monitor", uvm_component parent = "null");//2 args
+    function new(input string path = "monitor", uvm_component parent = null);//2 args
         super.new(path, parent);
     endfunction 
 
@@ -152,8 +152,8 @@ class monitor extends uvm_monitor;
         send = new("send", this); //constructor for send port inside build_phase
         tr = transaction::type_id::create("tr"); //1 arg as uvm_object type
         //getting access to interface through tb
-        if(!uvm_config_db#(virtual clk_if)::get("this", "", "vif", vif)); //uvm_test_top.env.agent.drv.aif
-            uvm_error("MON", "Unable to acess Interface");
+        if(!uvm_config_db#(virtual clk_if)::get(this, "", "vif", vif)) //uvm_test_top.env.agent.drv.aif
+            `uvm_error("MON", "Unable to acess Interface");
     endfunction
 
     //run_phase to get the response of DUT 
@@ -166,7 +166,7 @@ class monitor extends uvm_monitor;
                         tr.oper = reset_asserted;
                         ton     =  0;
                         toff    = 0;
-                        `uvm_info("MON", "SYSTEM RESET DETECTED", UMV_NONE);
+                        `uvm_info("MON", "SYSTEM RESET DETECTED", UVM_NONE);
                         send.write(tr); //calling write task in SCO
                     end
                 else 
