@@ -74,7 +74,7 @@ class variable_baud extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_object type, use instance name as path name 
                 start_item(tr); //send req to sequencer and wait_for_grant 
                 assert(tr.randomize);
-                tr.oper = random_baud; //manually declaring value of oper
+                tr.oper = variable_baud; //manually declaring value of oper
                 finish_item(tr); //send packet to sequencer and wait for item_done from driver      
             end
     endtask

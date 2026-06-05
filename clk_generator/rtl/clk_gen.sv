@@ -56,8 +56,7 @@ module clk_gen(
                     t_clk <= 0;
         end
         else begin
-            if(tx_count < tx_max/2) 
-            
+            if(tx_count < tx_max/2)  
                 begin 
                 tx_count <= tx_count + 1;    
                 end
