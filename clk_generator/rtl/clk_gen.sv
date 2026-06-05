@@ -60,8 +60,7 @@ module clk_gen(
                 begin 
                 tx_count <= tx_count + 1;    
                 end
-            else begin  
-            
+            else begin              
                 tx_count <= 0;
                 t_clk <= ~t_clk; 
             end
