@@ -1,41 +1,56 @@
 module clk_gen(
     input clk, rst,
     input [16:0] baud,
-    output tx_clk //slower clk 
-    //later we will be generating rx_clk with the help of tx_clk 
+    output reg tx_clk, rx_clk //slower clk
+
 );
 
-    reg t_clk = 0; //internal variable t_clk will be passed to tx_clk(slower clk)
-    int tx_max = 0; // tx_max = fclk/baud
-    int tx_count = 0; // to keep count of the clk ticks of faster clock
+    int tx_max = 0, rx_max = 0; // tx_max = fclk/baud
+    int tx_count = 0, rx_count =0; // to keep count of the clk ticks of faster clock
 
-//calculating tx_max value for different baud rate : tx_max = fclk/baud
+//calculating tx_max value for different baud rate : tx_max = fclk/baud, rx_max = tx_max/16
     always @(posedge clk) begin
         if (rst) begin
             tx_max <= 0;
+            rx_max <= 0;
         end 
         else begin
             case(baud)
                 4800 : begin
-                            tx_max <= 14'd10416;                   
+                            tx_max <= 14'd10416;
+                            rx_max <= 11'd651;                    
                        end
                 9600 : begin
-                            tx_max <= 14'd5208;                   
+                            tx_max <= 14'd5208; 
+                            rx_max <= 11'd325;                  
                        end
                 14400 : begin
-                            tx_max <= 14'd3472;                   
+                            tx_max <= 14'd3472; 
+                            rx_max <= 11'd217;                  
                        end
                 19200 : begin
-                            tx_max <= 14'd2604;                   
+                            tx_max <= 14'd2604;
+                            rx_max <= 11'd163;                   
                        end
                 38400 : begin
-                            tx_max <= 14'd1302;                   
+                            tx_max <= 14'd1302;
+                            rx_max <= 11'd81;                   
                        end
                 57600 : begin
-                            tx_max <= 14'd868;                   
+                            tx_max <= 14'd868;
+                            rx_max <= 11'd54;                   
                        end
+                115200: begin 
+						  tx_max <=14'd434;	
+				          rx_max <=11'd27;
+						end
+                128000: begin 
+						  tx_max <=14'd392;	
+				          rx_max <=11'd24;
+				    	end
                 default: begin
-                            tx_max <= 14'd5208;   
+                            tx_max <= 14'd5208; 
+                            rx_max <= 11'd325;  
                          end
             endcase
         end    
