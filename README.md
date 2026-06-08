@@ -5,4 +5,4 @@ This project showcases the design and verification of -
 
 The verification of the UART Controller has been performed by an UVM-based testbench architecture using Siemens Questa Sim 10.7 Simulator.
 
-# Doc to be updated
+# Doc and Code files to be updated very soon
