@@ -18,26 +18,43 @@ module uart_tx(
     typedef enum bit [2:0] {idle = 0, start_bit = 1, send_data = 2, send_parity = 3, send_first_stop = 5, done = 6} state_type;
     state_type state = idle,  next_state = idle;
 
-    //////////parity checking
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// parity checking
     always@(posedge tx_clk) begin
-        if(parity_type == 1'b1) begin
-            begin
-                case(length)
-                    4'd5 : parity_bit = ~(tx_data[4:0]);
-                    4'd6 : parity_bit = ~(tx_data[5:0]);
-                    4'd7 : parity_bit = ~(tx_data[6:0]);
-                    4'd8 : parity_bit = ~(tx_data[7:0]);
-                    default: parity_bit = 1'b0;
-                endcase 
+        if(parity_type == 1'b1)begin
+            case(length) //odd parity 
+                4'd5 : parity_bit = ^(tx_data[4:0]);
+                4'd6 : parity_bit = ^(tx_data[5:0]);
+                4'd7 : parity_bit = ^(tx_data[6:0]);
+                4'd8 : parity_bit = ^(tx_data[7:0]);
+                default: parity_bit = 1'b0;
+            endcase 
             end
         else begin
-            case(length)
-                4'd5 : 
+            case(length) //even parity
+            //bitwise xnor doesnt have dual behavior according to no of input bit
+                4'd5 : parity_bit = ~^(tx_data[4:0]));
+                4'd6 : parity_bit = ~^(tx_data[5:0]); 
+                4'd7 : parity_bit = ~^(tx_data[6:0]));
+                4'd8 : parity_bit = ~^(tx_data[7:0]);
+                default: parity_bit = 1'b0;  
             endcase
         end 
-        end
     end
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//////// reset decoder 
+    always@(posedge tx_clk) begin
+        if(rst)
+            state <= idle;
+        else 
+            state <= next_state; 
+    end
+
+//////////////////////////////////////////////////////////////////////////////////////////////////// 
+///////// next_state decoder and output decoder
+    always@(*)
+    
 
 
 endmodule 
