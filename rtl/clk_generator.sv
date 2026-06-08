@@ -2,13 +2,11 @@ module clk_gen(
     input clk, rst,
     input [16:0] baud,
     output reg tx_clk, rx_clk //slower clk
-
 );
-
     int tx_max = 0, rx_max = 0; // tx_max = fclk/baud
     int tx_count = 0, rx_count =0; // to keep count of the clk ticks of faster clock
 
-//calculating tx_max value for different baud rate : tx_max = fclk/baud, rx_max = tx_max/16
+//calculating tx_max and rx_max value for different baud rate : tx_max = fclk/baud, rx_max = tx_max/16
     always @(posedge clk) begin
         if (rst) begin
             tx_max <= 0;
@@ -56,19 +54,21 @@ module clk_gen(
         end    
     end
 
-//generating t_clk for tx_clk
+//generating tx_clk
 /*
-- suppose baud is 9600, then tx_max = 5208, tx_max/2 is 2604 then tx_count goes from 0 to 2603 
+- here we invert tx_clk when tx_count = tx_max not tx_max/2
+- suppose baud is 9600, then tx_max = 5208 then tx_count goes from 0 to 5201 
 - at the clk tick 1, tx_count is at 0 so if block runs and tx_count inc to 1 
-- so in 2604 clks ticks, tx_count is at 2603 so if block runs and tx_count inc to 2604
-- at the 2605th clk tick, count value is 2604 so else block runs
-- t_clk goes from 0 to 1 , similarly after another 2605 clk ticks, t_clk goes from 1 to 0 
-- thus we one complete cycle of tx_clk in 2604 + 1 + 2604 + 1 = 5210 clk ticks of faster clk 
+- so in 5208 clk ticks, tx_count is at 5207 so if block runs and tx_count inc to 5208
+- at the 5209th clk tick, count value is 5208 so else block runs
+- tx_clk goes from 0 to 1 , similarly after another 5209 clk ticks, tx_clk goes from 1 to 0 
+- thus we one complete cycle of tx_clk in 5208 + 1 + 5208 + 1 = 10418 clk ticks of faster clk 
 */
     always@(posedge clk) begin
         if(rst) begin
+                    tx_max   <= 0;
                     tx_count <= 0;
-                    t_clk <= 0;
+                    tx_clk   <= 0;
         end
         else begin
             if(tx_count < tx_max/2)  
@@ -77,24 +77,29 @@ module clk_gen(
                 end
             else begin              
                 tx_count <= 0;
-                t_clk <= ~t_clk; 
+                tx_clk <= ~tx_clk; 
             end
         end
     end
 
-//assigning t_clk to tx_clk
-    assign tx_clk = t_clk;
-
 endmodule
 
 ////////////////////////////////////////////////////////////////////////////
-
-/////interface//////
-
-interface clk_if;
-
-    logic clk, rst;
-    logic [16:0] baud;
-    logic tx_clk;
-
-endinterface
+//generating rx_clk
+    always@(posedge clk)
+        begin
+            if(rst) begin
+                rx_max   <= 0;
+                rx_count <= 0;
+                rx_clk   <= 0;
+            end
+            else begin
+                if(rx_count < rx_max) begin
+                    rx_count <= rx_count + 1;
+                end
+                else begin
+                    rx_count <= 0;
+                    rx_clk <= ~rx_clk;
+                end
+            end
+        end
