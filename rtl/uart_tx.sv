@@ -133,14 +133,33 @@ module uart_tx(
                     count <= 0;
                 end
 
+                start_bit: begin
+                    count <= 0;
+                end
+
+                send_data : begin
+                    count <= count + 1; //cnt will incr only while sending data bit by bit
+                end
+
+                send_parity : begin
+                    count <= 0;
+                end
+
+                send_first_stop : begin
+                    count <= 0;
+                end
+
+                send_second_stop : begin
+                    count <= 0;
+                end
+
+                done : begin
+                    count <= 0;
+                end
+
+                default : begin
+                    count <= 0;
+                end
             endcase
         end 
-
-
-
-
-
-
-
-
 endmodule 
