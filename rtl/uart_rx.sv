@@ -35,7 +35,43 @@ module uart_rx (
                         rx_done = 0;
                         rx_error = 0;
                         if(rx_start && !rx) //if start_bit is 0 then only start receiving
-                            
+                            next_state = start_bit;
+                        else 
+                            next_state = idle;
+                    end
+            ///////////////////////////////////////////////////////////////////////////////////////
+
+                start_bit :
+                    begin
+                        if(tick_count == 7 && rx) //check in the middle rx_clk tick, if start_bit is 1 then go back to idle 
+                            begin
+                                next_state = idle;
+                            end
+                        else if(tick_count == 15)
+                            begin    
+                                next_state = recv_data; //if start_bit is 0 then start receiving data 
+                            end
+                        else 
+                            begin
+                                next_state = start_bit; //if count != 7 and start_bit is not HIGH then stay in start_bit until middle clk tick 
+                            end
+                    end
+            /////////////////////////////////////////////////////////////////////////////////////////
+
+                recv_data : 
+                    begin
+                        if(tick_count = 7) //sample at middle tick
+                            begin
+                                datard[7:0] = {rx, datard[7:1]}; 
+                            end
+                        else if(tick_count == 15 && bit_count == (length - 1))
+                            begin
+                                case(length)
+                                    5: rx_out = datard[7:3];
+                                    6: rx_out = datard[7:2];
+                                    
+                                endcase
+                            end 
                     end
 
 
