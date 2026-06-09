@@ -53,8 +53,94 @@ module uart_tx(
 
 //////////////////////////////////////////////////////////////////////////////////////////////////// 
 ///////// next_state decoder and output decoder
-    always@(*)
-    
+    always@(*) begin
+        case(state)
+            idle : 
+                begin
+                    tx_done = 0;
+                    tx = 1'b1; //be default, tx line is HIGH
+                    tx_reg = {8{1'b0}};
+                    tx_err = 0;
+                    if(tx_start)
+                        next_state = start_bit;
+                    else 
+                        next_state = idle;
+                end 
+        /////////////////////////////////////////////////////////////////////////////////////////////
+            start_bit : 
+                begin
+                    tx_reg = tx_data; //passing to temp reg
+                    tx = start_b; //making tx line 0 
+                    next_state = send_data;
+                end
+        ///////////////////////////////////////////////////////////////////////////////////////////
+            send_data :
+                begin
+                    if(count < ( length - 1)) //say len = 5 -> 0 1 2 3 and 5th bit in else bit 
+                        begin
+                            tx = tx_reg[count]; //passing bits 1 by 1 
+                            next_state = send_data;    
+                        end
+                    else if(parity_en)
+                        begin
+                            tx = tx_reg[count];
+                            next_state = send_parity; //if parity bit is there
+                        end
+                    else
+                        begin
+                            tx = tx_reg[count];
+                            next_state = send_first_stop; //parity bit is not used , send stop bit
+                        end
+                end
+        //////////////////////////////////////////////////////////////////////////////////////////////
+            send_parity :
+                begin
+                    tx = parity_bit; //from parity_gen
+                    next_state = send_first_stop;
+                end        
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+            send_first_stop :
+                begin
+                    tx = stop_b; //making tx line HIGH 
+                    if(stop2)
+                        next_state = send_sec_stop;
+                    else 
+                        next_state = done;
+                end       
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+            send_sec_stop :
+                begin
+                    tx = stop_b; //making tx line HIGH again for 2nd stop bit
+                    next_state = done;
+                end
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+            done :
+                begin
+                    tx_done = 1'b1; //making tx_done HIGH upon completion
+                    next_state = idle;
+                end   
+        //////////////////////////////////////////////////////////////////////////////////////////////
+            default : next_state = idle;
+
+        endcase
+    end
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///// sequential logic ofr count value 
+    always@(posedge clk)
+        begin
+            case(state)
+                idle : begin
+                    count <= 0;
+                end
+
+            endcase
+        end 
+
+
+
+
+
+
 
 
 endmodule 
