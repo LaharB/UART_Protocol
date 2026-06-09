@@ -1,3 +1,5 @@
+//uart_top consists of the top module and interface
+
 `include "clk_generator.sv"
 `include "uart_tx.sv"
 `include "uart_rx.sv"
@@ -55,3 +57,5 @@ module uart_top(
     );
 
 endmodule
+
+///////////////////////////////////////////////////////////////////////////
