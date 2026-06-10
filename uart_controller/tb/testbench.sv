@@ -619,8 +619,8 @@ class test extends uvm_test;
 
     //instances
     env e;
-    rand_baud rb;
     //SEQs WITH PARITY
+    rand_baud rb;
     rand_baud_with_stop rbs;
     rand_baud_len5p rb5lwp;
     rand_baud_len6p rb6lwp;
@@ -638,7 +638,11 @@ class test extends uvm_test;
         super.build_phase(phase);
         //1 arg as uvm_obj
         e         = env::type_id::create("e"); 
-        rbs = rand_baud_with_stop::type_id::create("rand_baud");
+        rb = rand_baud::type_id::create("rand_baud");
+        rbs = rand_baud_with_stop::type_id::create("rand_baud_with_stop");
+        //SEQs with fixed length, var baud with parity
+        
+
 
     endfunction
 
