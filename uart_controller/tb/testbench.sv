@@ -398,7 +398,7 @@ class driver extends uvm_driver#(transaction);
         super.build_pahse(phase);
         tr = transaction::type_id::create("driver"); //1 arg as uvm_obj
 
-        if(!(uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif)))
+        if(!(uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif))) //this means whole path: uvm_test_top.env.agent.drv
             `uvm_error("DRV", "Unable to access interface");
     endfunction 
 
@@ -425,14 +425,14 @@ class driver extends uvm_driver#(transaction);
         forever //usign forever as driver has to be always ready to get new packets as well as send stimulus to DUT
             begin
                 seq_item_port.get_next_item(tr); //convey the seqr that drv is ready to recv next packet from seq
-                    vif.rst <= 1'b0; //deassert rst
-                    vif.tx_start <= 1'b1; //start tx
-                    vif.rx_start <= 1'b1; //start rx
-                    vif.baud <= tr.baud;
-                    vif.length <= tr.length;
-                    vif.parity_en <= tr.parity_en;
+                    vif.rst         <= 1'b0; //deassert rst
+                    vif.tx_start    <= 1'b1; //start tx
+                    vif.rx_start    <= 1'b1; //start rx
+                    vif.baud        <= tr.baud;
+                    vif.length      <= tr.length;
+                    vif.parity_en   <= tr.parity_en;
                     vif.parity_type <= tr.parity_type;
-                    vif.stop2 <= tr.stop2;
+                    vif.stop2       <= tr.stop2;
                 seq_item_port.item_done(tr); //send item_done to seqr and get new packet in non-blocking fashion     
                 `uvm_info("DRV", $sformatf("BAUD:%0d LEN:%0d PAR_TY:%0d PAR_EN:%0d STOP: %0d TX_DATA: %0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data), UVM_NONE); 
                 //wait for 1 clk tick 
@@ -449,3 +449,162 @@ class driver extends uvm_driver#(transaction);
     endtask
 
 endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//5.MONITOR - uvm_component
+class monitor extends uvm_monitor;
+   `uvm_component_utils(monitor)
+
+    transaction tr; //data container to store response sent by DUT 
+    virtual uart_if vif; //getting access to interface through tb_top
+    uvm_analysis_port#(transaction) send; //port to connect to sco 
+
+   //std constr 
+   function new(input string path = "monitor", uvm_component parent = null); //2 args as uvm_comp
+        super.new(path, parent);
+   endfunction 
+
+    //build_phase - func + super
+    virtual function build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
+        send = new("send", this); //2 args for port
+        if(!(uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif))) //this means whole path: uvm_test_top.env.agent.mon
+            `uvm_error("MON", "Unable to access interface");
+    endfunction
+
+
+    //run task to collect response from DUT
+    virtual task run_phase(uvm_phase phase);
+        forever //using forever as mon has to be ready all the time to recv any response from DUT
+            begin
+                @(posedge vif.clk); //wait for 1 clk tick as in drv
+                if(vif.rst)
+                    begin
+                        tr.rst = 1'b1;
+                        `uvm_info("MON", "SYSTEM RESET DETECTED", UVM_NONE);
+                    end
+                else
+                    begin
+                        @(posedge vif.tx_done); //wait for tx_done just like drv and then collect the tx signals 
+                        tr.rst = 1'b0;
+                        tr.tx_start    = vif.tx_start;
+                        tr.rx_start    = vif.rx_start;
+                        tr.tx_data     = vif.tx_data;
+                        tr.baud        = vif.baud;
+                        tr.length      = vif.length;
+                        tr.parity_en   = vif.parity_en;
+                        tr.parity_type = vif.parity_type; 
+                        tr.stop2       = vif.stop2;
+                        @(negedge vif.rx_done); //wait for rx_done and then collect the data received
+                        tr.rx_out      = vif.rx_out;
+                        `uvm_info("MON", $sformatf("BAUD:%0d, LEN:%0d, PAR_TY:%0d, PAR_EN:%0d, STOP:%0d, TX_DATA:%0d, RX_DATA:%0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data, tx.rx_out), UVM_NONE);
+                        send.write(tr); //calling write method inside sco
+                    end
+            end 
+    endtask
+
+endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//6.SCOREBOARD - uvm_component
+class scoreboard extends uvm_scoreboard;
+   `uvm_component_utils(scoreboard)
+
+    transaction tr; //data container to store data sent by monitor 
+    //2 args - datatype and the class name where write method is added
+    uvm_analysis_imp#(transaction, scoreboard) recv; //imp to connect with mon
+
+   //std constr 
+   function new(input string path = "scoreboard", uvm_component parent = null); //2 args as uvm_comp
+        super.new(path, parent);
+   endfunction 
+
+    //build_phase - func + super
+    virtual function build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
+        recv = new("recv", this); //2 args for port
+    endfunction
+
+    //write method - virtual as write method skeleton is defined inside uvm_comp parent class 
+    virtual function write(transaction tr);
+        `uvm_info("SCO", $sformatf("BAUD:%0d, LEN:%0d, PAR_TY:%0d, PAR_EN:%0d, STOP:%0d, TX_DATA:%0d, RX_DATA:%0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data, tx.rx_out), UVM_NONE)
+        if(tr.rst == 1'b1)
+            `uvm_info("SCO", "SYSTEM RESET", UVM_NONE)
+        else if(tr.tx_data == tr.rx_out)
+            `uvm_info("SCO", "TEST PASSED", UVM_NONE)
+        else 
+            `uvm_info("SCO", "TEST FAILED", UVM_NONE);
+        $display("------------------------------------------------");
+    endfunction
+    
+endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//7.AGENT - uvm_component
+//AGENT contains seqr, drv and mon and also connect seqr and drv
+class agent extends uvm_agent;
+   `uvm_component_utils(agent)
+
+    //instances
+    uart_config cfg; //env config
+    uvm_sequencer#(transaction) seqr;
+    driver drv;
+    monitor mon;
+
+   //std constr 
+   function new(input string path = "agent", uvm_component parent = null); //2 args as uvm_comp
+        super.new(path, parent);
+   endfunction 
+
+    //build_phase - func + super
+    virtual function build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        cfg = uart_config::type_id::create("cfg"); //1 arg as uvm_obj
+        seqr = uvm_sequencer#(transaction)::type_id::create("seqr", this); //2 arg as uvm_comp
+        drv =  driver::type_id::create("drv", this); //2 args as uvm_obj
+        mon = monitor::type_id::create("mon", this); //2 args as uvm_obj
+    endfunction
+
+    //connect_phase to connect mon and sco - func + super
+    virtual function connect_phase(uvm_phase phase);
+        super.connect_phase(phase);
+        if(cfg.is_active == UVM_ACTIVE) //if agent is active then only connect drv and seqr
+            begin
+                drv.seq_item_port.connect(seqr.seq_item_export); 
+            end
+    endfunction
+    
+endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//8.ENVIRONMENT - uvm_component
+//ENV contains AGENT and SCO and also connect mon and sco
+class env extends uvm_env;
+   `uvm_component_utils(env)
+
+    //instances
+    agent a;
+    scoreboard sco;
+
+   //std constr 
+   function new(input string path = "env", uvm_component parent = null); //2 args as uvm_comp
+        super.new(path, parent);
+   endfunction 
+
+    //build_phase - func + super
+    virtual function build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        a   = agent::type_id::create("a", this); //2 args as uvm_obj
+        sco = scoreboard::type_id::create("sco", this); //2 args as uvm_obj
+    endfunction
+
+    //connect_phase to connect mon and sco - func + super
+    virtual function connect_phase(uvm_phase phase);
+        super.connect_phase(phase);
+        if(cfg.is_active == UVM_ACTIVE) //if agent is active then only connect drv and seqr
+            begin
+                drv.seq_item_port.connect(seqr.seq_item_export); 
+            end
+    endfunction
+    
+endclass
+
+
