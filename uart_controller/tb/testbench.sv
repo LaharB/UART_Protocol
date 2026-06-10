@@ -59,6 +59,7 @@ endclass
 ////////////////////////////////////////////////////////////////////////
 //Creating SEQUENCES for random length with and without parity 
 //3.SEQUENCES
+//SEQ WITH PARITY
 // SEQ 1 - random baud with fixed length = 8 and parity enable , parity type random, 1 stop 
 class rand_baud extends uvm_sequence#(transaction);
     `uvm_object_utils(rand_baud)
@@ -206,7 +207,7 @@ class rand_baud_len7p extends uvm_sequence#(transaction);
                 tr.oper = length7wp;
                 tr.rst = 1'b0;
                 tr.length = 7;
-                tr.tx_data = {1'b0, tr.tx_data[7:1]}; //6-bits data so MSBs will be appended with 0s
+                tr.tx_data = {1'b0, tr.tx_data[7:1]}; //7-bits data so MSBs will be appended with 0s
                 tr.tx_start = 1'b1;
                 tr.rx_start = 1'b1;
                 tr.parity_en = 1'b1;
@@ -248,5 +249,132 @@ class rand_baud_len8p extends uvm_sequence#(transaction);
     endtask
 
 endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//SEQ WITHOUT PARITY
+// SEQ 7 - fixed length = 5 - variable baud WITHOUT parity
+class rand_baud_len5 extends uvm_sequence#(transaction);
+`uvm_object_utils(rand_baud_len5)
 
+    transaction tr;
 
+    //std constr 
+    function new(input string path = "rand_baud_len5");
+        super.new(path);
+    endfunction
+
+    //body()
+    virtual task body();
+        repeat(5)
+            begin
+                tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
+                start_item(tr); //send req to seq and wait for grant 
+                assert(tr.randomize);
+                tr.oper = length5wop;
+                tr.rst = 1'b0;
+                tr.length = 5;
+                tr.tx_data = {3'b00, tr.tx_data[7:3]}; //5-bits data so MSBs will be appended with 0s
+                tr.tx_start = 1'b1;
+                tr.rx_start = 1'b1;
+                tr.parity_en = 1'b1;
+                tr.stop2 = 1'b0;
+                finish_item(tr); //send packet to seqr and wait for item done 
+            end 
+    endtask
+
+endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SEQ 8 - fixed length = 6 - variable baud WITHOUT parity
+class rand_baud_len6 extends uvm_sequence#(transaction);
+`uvm_object_utils(rand_baud_len6)
+
+    transaction tr;
+
+    //std constr 
+    function new(input string path = "rand_baud_len6");
+        super.new(path);
+    endfunction
+
+    //body()
+    virtual task body();
+        repeat(5)
+            begin
+                tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
+                start_item(tr); //send req to seq and wait for grant 
+                assert(tr.randomize);
+                tr.oper = length6wop;
+                tr.rst = 1'b0;
+                tr.length = 6;
+                tr.tx_data = {2'b00, tr.tx_data[7:2]}; //6-bits data so MSBs will be appended with 0s
+                tr.tx_start = 1'b1;
+                tr.rx_start = 1'b1;
+                tr.parity_en = 1'b1;
+                tr.stop2 = 1'b0;
+                finish_item(tr); //send packet to seqr and wait for item done 
+            end 
+    endtask
+
+endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SEQ 9 - fixed length = 7 - variable baud with parity
+class rand_baud_len7 extends uvm_sequence#(transaction);
+`uvm_object_utils(rand_baud_len7)
+
+    transaction tr;
+
+    //std constr 
+    function new(input string path = "rand_baud_len7");
+        super.new(path);
+    endfunction
+
+    //body()
+    virtual task body();
+        repeat(5)
+            begin
+                tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
+                start_item(tr); //send req to seq and wait for grant 
+                assert(tr.randomize);
+                tr.oper = length7wop;
+                tr.rst = 1'b0;
+                tr.length = 7;
+                tr.tx_data = {1'b0, tr.tx_data[7:1]}; //6-bits data so MSBs will be appended with 0s
+                tr.tx_start = 1'b1;
+                tr.rx_start = 1'b1;
+                tr.parity_en = 1'b1;
+                tr.stop2 = 1'b0;
+                finish_item(tr); //send packet to seqr and wait for item done 
+            end 
+    endtask
+
+endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SEQ 10 - fixed length = 8 - variable baud with parity
+class rand_baud_len8 extends uvm_sequence#(transaction);
+`uvm_object_utils(rand_baud_len8)
+
+    transaction tr;
+
+    //std constr 
+    function new(input string path = "rand_baud_len8");
+        super.new(path);
+    endfunction
+
+    //body()
+    virtual task body();
+        repeat(5)
+            begin
+                tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
+                start_item(tr); //send req to seq and wait for grant 
+                assert(tr.randomize);
+                tr.oper = length8wop;
+                tr.rst = 1'b0;
+                tr.length = 6;
+                tr.tx_data = tr.tx_data[7:0];
+                tr.tx_start = 1'b1;
+                tr.rx_start = 1'b1;
+                tr.parity_en = 1'b1;
+                tr.stop2 = 1'b0;
+                finish_item(tr); //send packet to seqr and wait for item done 
+            end 
+    endtask
+
+endclass
