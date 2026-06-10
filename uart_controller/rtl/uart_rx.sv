@@ -6,7 +6,7 @@ module uart_rx(
     input parity_type, parity_en,
     input stop2,
     output reg [7:0] rx_out,
-    ouptut logic rx_done, rx_error
+    output logic rx_done, rx_error
 );
     logic parity = 0; //to calc parity from data received
     logic [7:0] datard = 0; //to store data from tx bit by bit 
@@ -17,7 +17,7 @@ module uart_rx(
     state_type state = idle, next_state = idle;
 
 //////////  reset decoder
-    always@(posedge clk)
+    always@(posedge rx_clk)
         begin
             if(rst)
                 state <= idle;
@@ -60,7 +60,7 @@ module uart_rx(
 
                 recv_data : 
                     begin
-                        if(tick_count = 7) //sample at middle tick
+                        if(tick_count == 7) //sample at middle tick
                             begin
                                 datard[7:0] = {rx, datard[7:1]}; 
                             end
@@ -107,7 +107,7 @@ module uart_rx(
 
                 check_first_stop : 
                         begin
-                            if(ticK_count == 7)
+                            if(tick_count == 7)
                                 begin
                                     if(rx != 1'b1) //if stop_bit != 1 then error 
                                         rx_error = 1'b1;
@@ -204,8 +204,10 @@ module uart_rx(
                     end
         ////////////////////////////////////////////////////////////////////////////
                 check_first_stop :
-                    tick_count <= 0; 
-                    bit_count  <= 0; 
+                    begin
+                        tick_count <= 0; 
+                        bit_count  <= 0;     
+                    end
             endcase    
         end
 endmodule
