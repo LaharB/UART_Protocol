@@ -378,3 +378,54 @@ class rand_baud_len8 extends uvm_sequence#(transaction);
     endtask
 
 endclass
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//WE dont have to create any uvm_sequencer class, it gets created automatically
+//4.DRIVER - uvm_component 
+class driver extends uvm_driver#(transaction);
+    `uvm_component_utils(driver)
+
+    transaction tr; //data container to store the packet sent by seq through seqr
+    virtual uart_if vif; //instance to get access to interface through tb_top
+
+    //std constr
+    function new(input string path = "driver", uvm_component parent = null); //2 args as uvm_component 
+        super.new(path, parent);
+    endfunction
+
+    //build_phase = function + super as they do not consume time 
+    //virtual as skeleton is defined inside PARENT class: uvm_component 
+    virtual function build_phase(uvm_phase pahse);
+        super.build_pahse(phase);
+        tr = transaction::type_id::create("driver"); //1 arg as uvm_obj
+
+        if(!(uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif)))
+            `uvm_error("DRV", "Unable to access interface");
+    endfunction 
+
+    //2 tasks declared outside run_phase to simplify - reset_dut task and drive task
+    task reset_dut();
+        repeat(5)
+            begin
+                vif.rst <= 1'b1; //apply rst to DUT manually
+                vif.tx_start <= 1'b0; 
+                vif.rx_start <= 1'b0;
+                
+            end
+    endtask
+
+
+
+
+    //run phase - virtual task as time is consumed
+    //run phase - to apply sitmulus to DUT
+    virtual task run(uvm_phase phase);
+        forever //usign forever as driver has to be always ready to get new packets as well as send stimulus to DUT  
+            begin
+                seq_item_port.get_next_item(tr); //convey the seqr that ready to recv new packet from seq
+
+                seq_item_port.item_done(tr); //send item_done to seqr and get new packet in non-blocking fashion 
+            end
+
+    endtask
+
+endclass
