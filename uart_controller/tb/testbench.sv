@@ -592,8 +592,8 @@ class env extends uvm_env;
     //build_phase - func + super
     virtual function build_phase(uvm_phase phase);
         super.build_phase(phase);
-        a   = agent::type_id::create("a", this); //2 args as uvm_obj
-        sco = scoreboard::type_id::create("sco", this); //2 args as uvm_obj
+        a   = agent::type_id::create("a", this); //2 args as uvm_comp
+        sco = scoreboard::type_id::create("sco", this); //2 args as uvm_comp
     endfunction
 
     //connect_phase to connect mon and sco - func + super
@@ -604,6 +604,45 @@ class env extends uvm_env;
                 drv.seq_item_port.connect(seqr.seq_item_export); 
             end
     endfunction
+    
+endclass
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//9.TEST - uvm_component
+//TEST contains the various SEQs and also start the SEQR from TEST
+class test extends uvm_test;
+   `uvm_component_utils(test)
+
+   //std constr 
+   function new(input string path = "test", uvm_component parent = null); //2 args as uvm_comp
+        super.new(path, parent);
+   endfunction 
+
+    //instances
+    env e;
+    rand_baud rb;
+    //SEQs WITH PARITY
+    rand_baud_with_stop rbs;
+    rand_baud_len5p rb5lwp;
+    rand_baud_len6p rb6lwp;
+    rand_baud_len7p rb7lwp;
+    rand_baud_len8p rb8lwp;
+    //SEQs without PARITY
+    rand_baud_len5 rb5lwop;
+    rand_baud_len6 rb6lwop;
+    rand_baud_len7 rb7lwop;
+    rand_baud_len8 rb8lwop;
+
+
+    //build_phase - func + super
+    virtual function build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        //1 arg as uvm_obj
+        e         = env::type_id::create("e"); 
+        rbs = rand_baud_with_stop::type_id::create("rand_baud");
+
+    endfunction
+
+    
     
 endclass
 
