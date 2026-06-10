@@ -409,22 +409,34 @@ class driver extends uvm_driver#(transaction);
                 vif.rst <= 1'b1; //apply rst to DUT manually
                 vif.tx_start <= 1'b0; 
                 vif.rx_start <= 1'b0;
-                
+                vif.tx_data <= 8'b0;
+                vif.baud <= 16'h0000;
+                vif.length <= 4'h0;
+                vif.parity_en <= 1'b0;
+                vif.parity_type <= 1'b0;
+                vif.stop2 <= 1'b0;
+                `uvm_info("DRV", "System Reset : Start of Simulation", UVM_MEDIUM);
+                @(posedge vif.clk); //wait of 1 clk tick
             end
+    endtask
+
+    task drive(); 
+        reset_dut();
+        forever //usign forever as driver has to be always ready to get new packets as well as send stimulus to DUT
+            begin
+                seq_item_port.get_next_item(tr); //convey the seqr that drv is ready to recv next packet from seq
+
+                seq_item_port.item_done(tr); //send item_done to seqr and get new packet in non-blocking fashion     
+            end 
     endtask
 
 
 
 
-    //run phase - virtual task as time is consumed
-    //run phase - to apply sitmulus to DUT
+    //run phase to apply stimulus to DUT - virtual task as time is consumed
     virtual task run(uvm_phase phase);
-        forever //usign forever as driver has to be always ready to get new packets as well as send stimulus to DUT  
-            begin
-                seq_item_port.get_next_item(tr); //convey the seqr that ready to recv new packet from seq
-
-                seq_item_port.item_done(tr); //send item_done to seqr and get new packet in non-blocking fashion 
-            end
+      
+            
 
     endtask
 
