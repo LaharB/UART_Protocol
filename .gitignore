@@ -19,6 +19,7 @@ work/
 # Ignore log and transcript files
 transcript
 xvlog.pb
+xsim.dir
 *.log
 
 # Ignore waveform simulation data files (these are huge)
