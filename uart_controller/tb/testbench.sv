@@ -425,19 +425,27 @@ class driver extends uvm_driver#(transaction);
         forever //usign forever as driver has to be always ready to get new packets as well as send stimulus to DUT
             begin
                 seq_item_port.get_next_item(tr); //convey the seqr that drv is ready to recv next packet from seq
-
+                    vif.rst <= 1'b0; //deassert rst
+                    vif.tx_start <= 1'b1; //start tx
+                    vif.rx_start <= 1'b1; //start rx
+                    vif.baud <= tr.baud;
+                    vif.length <= tr.length;
+                    vif.parity_en <= tr.parity_en;
+                    vif.parity_type <= tr.parity_type;
+                    vif.stop2 <= tr.stop2;
                 seq_item_port.item_done(tr); //send item_done to seqr and get new packet in non-blocking fashion     
+                `uvm_info("DRV", $sformatf("BAUD:%0d LEN:%0d PAR_TY:%0d PAR_EN:%0d STOP: %0d TX_DATA: %0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data), UVM_NONE); 
+                //wait for 1 clk tick 
+                @(posedge vif.clk);
+                //wait for tx_done and rx_done edge
+                @(posedge vif.tx_done);
+                @(negedge vif.rx_done);
             end 
     endtask
 
-
-
-
     //run phase to apply stimulus to DUT - virtual task as time is consumed
     virtual task run(uvm_phase phase);
-      
-            
-
+        drive();
     endtask
 
 endclass

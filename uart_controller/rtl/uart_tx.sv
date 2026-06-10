@@ -15,7 +15,14 @@ module uart_tx(
     logic parity_bit = 0; //to store parity value 
     integer count    = 0; //to keep count of bit position of tx_reg
 
-    typedef enum bit [2:0] {idle = 0, start_bit = 1, send_data = 2, send_parity = 3, send_first_stop = 5, done = 6} state_type;
+    typedef enum bit [2:0] {
+        idle = 0, 
+        start_bit = 1, 
+        send_data = 2, 
+        send_parity = 3, 
+        send_first_stop = 5,
+        send_sec_stop = 6, 
+        done = 7 } state_type;
     state_type state = idle,  next_state = idle;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,9 +40,9 @@ module uart_tx(
         else begin
             case(length) //even parity
             //bitwise xnor doesnt have dual behavior according to no of input bit
-                4'd5 : parity_bit = ~^(tx_data[4:0]));
+                4'd5 : parity_bit = ~^(tx_data[4:0]);
                 4'd6 : parity_bit = ~^(tx_data[5:0]); 
-                4'd7 : parity_bit = ~^(tx_data[6:0]));
+                4'd7 : parity_bit = ~^(tx_data[6:0]);
                 4'd8 : parity_bit = ~^(tx_data[7:0]);
                 default: parity_bit = 1'b0;  
             endcase
@@ -126,7 +133,7 @@ module uart_tx(
     end
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///// sequential logic ofr count value 
-    always@(posedge clk)
+    always@(posedge tx_clk)
         begin
             case(state)
                 idle : begin
@@ -149,7 +156,7 @@ module uart_tx(
                     count <= 0;
                 end
 
-                send_second_stop : begin
+                send_sec_stop : begin
                     count <= 0;
                 end
 
