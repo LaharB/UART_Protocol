@@ -81,9 +81,6 @@ module clk_gen(
             end
         end
     end
-
-endmodule
-
 ////////////////////////////////////////////////////////////////////////////
 //generating rx_clk
     always@(posedge clk)
@@ -103,3 +100,5 @@ endmodule
                 end
             end
         end
+
+endmodule
