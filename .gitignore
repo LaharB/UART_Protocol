@@ -18,6 +18,7 @@ work/
 
 # Ignore log and transcript files
 transcript
+xvlog.pb
 *.log
 
 # Ignore waveform simulation data files (these are huge)
