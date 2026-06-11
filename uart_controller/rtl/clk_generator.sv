@@ -56,12 +56,13 @@ module clk_gen(
 
 //generating tx_clk
 /*
-- here we invert tx_clk when tx_count = tx_max not tx_max/2
-- suppose baud is 9600, then tx_max = 5208 then tx_count goes from 0 to 5201 
+- here we invert tx_clk when tx_count > tx_max not tx_max/2
+- suppose baud is 9600, then tx_max = 5208 then tx_count goes from 0 to 5208 
 - at the clk tick 1, tx_count is at 0 so if block runs and tx_count inc to 1 
-- so in 5208 clk ticks, tx_count is at 5207 so if block runs and tx_count inc to 5208
-- at the 5209th clk tick, count value is 5208 so else block runs
-- tx_clk goes from 0 to 1 , similarly after another 5209 clk ticks, tx_clk goes from 1 to 0 
+- so at 5208th clk tick, tx_count is at 5207 so if block runs and tx_count inc to 5208
+- at the 5209th clk tick, count value is 5208 so again if block runs and tx_count inc to 5209 
+- at the 5210th clk tick, count value is 5209 so else block runs and tx_count becomes 0
+- Also tx_clk goes from 0 to 1 , similarly after another 5210 clk ticks, tx_clk goes from 1 to 0 
 - thus we one complete cycle of tx_clk in 5208 + 1 + 5208 + 1 = 10418 clk ticks of faster clk 
 */
     always@(posedge clk) begin
@@ -71,7 +72,7 @@ module clk_gen(
                     tx_clk   <= 0;
         end
         else begin
-            if(tx_count < tx_max/2)  
+            if(tx_count <= tx_max)  
                 begin 
                 tx_count <= tx_count + 1;    
                 end
@@ -91,7 +92,7 @@ module clk_gen(
                 rx_clk   <= 0;
             end
             else begin
-                if(rx_count < rx_max) begin
+                if(rx_count <= rx_max) begin
                     rx_count <= rx_count + 1;
                 end
                 else begin

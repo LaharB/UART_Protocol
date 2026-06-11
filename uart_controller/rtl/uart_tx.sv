@@ -20,9 +20,9 @@ module uart_tx(
         start_bit = 1, 
         send_data = 2, 
         send_parity = 3, 
-        send_first_stop = 5,
-        send_sec_stop = 6, 
-        done = 7 } state_type;
+        send_first_stop = 4,
+        send_sec_stop = 5, 
+        done = 6 } state_type;
     state_type state = idle,  next_state = idle;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

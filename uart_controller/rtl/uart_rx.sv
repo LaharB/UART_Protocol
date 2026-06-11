@@ -13,7 +13,14 @@ module uart_rx(
     int tick_count = 0; //to count the clk tick 
     int bit_count = 0; //to count bit no in datard
     
-    typedef enum bit [2:0] {idle = 0, start_bit = 1, recv_data = 2, check_parity = 3, check_first_stop = 4, check_sec_stop = 5, done = 6} state_type;
+    typedef enum bit [2:0] {
+        idle = 0, 
+        start_bit = 1, 
+        recv_data = 2,
+        check_parity = 3, 
+        check_first_stop = 4, 
+        check_sec_stop = 5, 
+        done = 6} state_type;
     state_type state = idle, next_state = idle;
 
 //////////  reset decoder
@@ -66,11 +73,13 @@ module uart_rx(
                             end
                         else if(tick_count == 15 && bit_count == (length - 1))
                             begin
+
                                 case(length)
                                     5: rx_out = datard[7:3];
                                     6: rx_out = datard[7:2];
                                     7: rx_out = datard[7:1];
                                     8: rx_out = datard[7:0];
+                                    default: rx_out = 8'h00;
                                 endcase
                             ////////////////////////////////////////////////////
                             //parity_generator from datard received 
@@ -78,6 +87,12 @@ module uart_rx(
                                     parity = ^datard;
                                 else 
                                     parity = ~^datard;
+                            ////////////////////////////////////////////////////
+                                if(parity_en)
+                                    next_state = check_parity;
+                                else
+                                    next_state = check_first_stop;                            
+                            ////////////////////////////////////////////////////
                             end
 
                         else 
@@ -175,10 +190,12 @@ module uart_rx(
                     begin
                         if(tick_count < 15)    
                             tick_count <= tick_count + 1;
-                        else 
+                        else
+                            begin
                             tick_count <= 0; 
                             //bit_count will incr only in recv_data state  
-                            bit_count <= bit_count + 1; //if count > 15 then go to next bit_position     
+                            bit_count <= bit_count + 1; //if count > 15 then go to next bit_position      
+                            end 
                     end
         ////////////////////////////////////////////////////////////////////////////
                 check_parity :

@@ -415,6 +415,7 @@ class driver extends uvm_driver#(transaction);
                 vif.parity_type <= 1'b0;
                 vif.stop2 <= 1'b0;
                 `uvm_info("DRV", "System Reset : Start of Simulation", UVM_MEDIUM);
+                $display("--------------------------------------------------------");
                 @(posedge vif.clk); //wait of 1 clk tick
             end
     endtask
@@ -481,6 +482,7 @@ class monitor extends uvm_monitor;
                     begin
                         tr.rst = 1'b1;
                         `uvm_info("MON", "SYSTEM RESET DETECTED", UVM_NONE);
+                        $display("-------------------------------------------");
                     end
                 else
                     begin
