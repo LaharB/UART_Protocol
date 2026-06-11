@@ -306,7 +306,7 @@ class rand_baud_len6 extends uvm_sequence#(transaction);
                 tr.tx_data = {2'b00, tr.tx_data[7:2]}; //6-bits data so MSBs will be appended with 0s
                 tr.tx_start = 1'b1;
                 tr.rx_start = 1'b1;
-                tr.parity_en = 1'b1;
+                tr.parity_en = 1'b0;
                 tr.stop2 = 1'b0;
                 finish_item(tr); //send packet to seqr and wait for item done 
             end 
@@ -314,7 +314,7 @@ class rand_baud_len6 extends uvm_sequence#(transaction);
 
 endclass
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SEQ 9 - fixed length = 7 - variable baud with parity
+// SEQ 9 - fixed length = 7 - variable baud WITHOUT parity
 class rand_baud_len7 extends uvm_sequence#(transaction);
 `uvm_object_utils(rand_baud_len7)
 
@@ -338,7 +338,7 @@ class rand_baud_len7 extends uvm_sequence#(transaction);
                 tr.tx_data = {1'b0, tr.tx_data[7:1]}; //6-bits data so MSBs will be appended with 0s
                 tr.tx_start = 1'b1;
                 tr.rx_start = 1'b1;
-                tr.parity_en = 1'b1;
+                tr.parity_en = 1'b0;
                 tr.stop2 = 1'b0;
                 finish_item(tr); //send packet to seqr and wait for item done 
             end 
@@ -346,7 +346,7 @@ class rand_baud_len7 extends uvm_sequence#(transaction);
 
 endclass
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SEQ 10 - fixed length = 8 - variable baud with parity
+// SEQ 10 - fixed length = 8 - variable baud WITHOUT parity
 class rand_baud_len8 extends uvm_sequence#(transaction);
 `uvm_object_utils(rand_baud_len8)
 
@@ -366,11 +366,11 @@ class rand_baud_len8 extends uvm_sequence#(transaction);
                 assert(tr.randomize);
                 tr.op = length8wop;
                 tr.rst = 1'b0;
-                tr.length = 6;
+                tr.length = 8;
                 tr.tx_data = tr.tx_data[7:0];
                 tr.tx_start = 1'b1;
                 tr.rx_start = 1'b1;
-                tr.parity_en = 1'b1;
+                tr.parity_en = 1'b0;
                 tr.stop2 = 1'b0;
                 finish_item(tr); //send packet to seqr and wait for item done 
             end 
@@ -425,9 +425,10 @@ class driver extends uvm_driver#(transaction);
             begin
                 seq_item_port.get_next_item(tr); //convey the seqr that drv is ready to recv next packet from seq
                     vif.rst         <= 1'b0; //deassert rst
-                    vif.tx_start    <= 1'b1; //start tx
-                    vif.rx_start    <= 1'b1; //start rx
+                    vif.tx_start    <= tr.tx_start;
+                    vif.rx_start    <= tr.rx_start;
                     vif.baud        <= tr.baud;
+                    vif.tx_data     <= tr.tx_data;
                     vif.length      <= tr.length;
                     vif.parity_en   <= tr.parity_en;
                     vif.parity_type <= tr.parity_type;
