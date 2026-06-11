@@ -14,13 +14,13 @@ module uart_top(
     input stop2,
     output tx_done, rx_done, 
     output tx_err, rx_err,
-    output [7:0] rx_data 
+    output [7:0] rx_out 
 );
 
     wire tx_clk, rx_clk;
     wire tx_to_rx;
 
-    clk_generator clk_dut(
+    clk_gen clk_dut(
         .clk(clk), 
         .rst(rst),
         .baud(baud),

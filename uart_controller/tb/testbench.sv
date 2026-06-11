@@ -1,4 +1,3 @@
-`timescale 1ns/1ps 
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 
@@ -27,8 +26,8 @@ typedef enum bit [3:0] {
     length6wop = 7, 
     length7wop = 8, 
     length8wop = 9, 
-    raud_baud_2_stop = 11, 
-    rand_length_2_stop = 12} oper_mode;
+    raud_baud_2_stop = 10, 
+    rand_length_2_stop = 11} oper_mode;
 
 //2.TRANSACTION
 class transaction extends uvm_sequence_item; 
@@ -78,7 +77,7 @@ class rand_baud extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg only
                 start_item(tr); //send req to seqr and wait_for_grant
                 assert(tr.randomize);
-                tr.op = rand_baud_1_stop; //manually setting oper mode
+                tr.op = raud_baud_1_stop; //manually setting oper mode
                 tr.length = 8;
                 tr.rst = 1'b0;  //deasserting rst manually
                 tr.tx_start = 1'b1;
@@ -109,7 +108,7 @@ class rand_baud_with_stop extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg 
                 start_item(tr); //send req to seqr and wait_for_grant
                 assert(tr.randomize);
-                tr.oper = rand_baud_2_stop;
+                tr.op = raud_baud_2_stop;
                 tr.rst = 1'b0; //deasserting rst manually
                 tr.length = 8;
                 tr.tx_start = 1'b1;
@@ -140,7 +139,7 @@ class rand_baud_len5p extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
                 start_item(tr); //send req to seq and wait for grant 
                 assert(tr.randomize);
-                tr.oper = length5wp;
+                tr.op = length5wp;
                 tr.rst = 1'b0;
                 tr.length = 5;
                 tr.tx_data = {3'b000, tr.tx_data[7:3]}; //5-bits data so MSBs will be appended with 0s
@@ -172,7 +171,7 @@ class rand_baud_len6p extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
                 start_item(tr); //send req to seq and wait for grant 
                 assert(tr.randomize);
-                tr.oper = length6wp;
+                tr.op = length6wp;
                 tr.rst = 1'b0;
                 tr.length = 6;
                 tr.tx_data = {2'b00, tr.tx_data[7:2]}; //6-bits data so MSBs will be appended with 0s
@@ -204,7 +203,7 @@ class rand_baud_len7p extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
                 start_item(tr); //send req to seq and wait for grant 
                 assert(tr.randomize);
-                tr.oper = length7wp;
+                tr.op = length7wp;
                 tr.rst = 1'b0;
                 tr.length = 7;
                 tr.tx_data = {1'b0, tr.tx_data[7:1]}; //7-bits data so MSBs will be appended with 0s
@@ -236,7 +235,7 @@ class rand_baud_len8p extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
                 start_item(tr); //send req to seq and wait for grant 
                 assert(tr.randomize);
-                tr.oper = length8wp;
+                tr.op = length8wp;
                 tr.rst = 1'b0;
                 tr.length = 8;
                 tr.tx_data = tr.tx_data[7:0];
@@ -269,7 +268,7 @@ class rand_baud_len5 extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
                 start_item(tr); //send req to seq and wait for grant 
                 assert(tr.randomize);
-                tr.oper = length5wop;
+                tr.op = length5wop;
                 tr.rst = 1'b0;
                 tr.length = 5;
                 tr.tx_data = {3'b00, tr.tx_data[7:3]}; //5-bits data so MSBs will be appended with 0s
@@ -301,7 +300,7 @@ class rand_baud_len6 extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
                 start_item(tr); //send req to seq and wait for grant 
                 assert(tr.randomize);
-                tr.oper = length6wop;
+                tr.op = length6wop;
                 tr.rst = 1'b0;
                 tr.length = 6;
                 tr.tx_data = {2'b00, tr.tx_data[7:2]}; //6-bits data so MSBs will be appended with 0s
@@ -333,7 +332,7 @@ class rand_baud_len7 extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
                 start_item(tr); //send req to seq and wait for grant 
                 assert(tr.randomize);
-                tr.oper = length7wop;
+                tr.op = length7wop;
                 tr.rst = 1'b0;
                 tr.length = 7;
                 tr.tx_data = {1'b0, tr.tx_data[7:1]}; //6-bits data so MSBs will be appended with 0s
@@ -365,7 +364,7 @@ class rand_baud_len8 extends uvm_sequence#(transaction);
                 tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
                 start_item(tr); //send req to seq and wait for grant 
                 assert(tr.randomize);
-                tr.oper = length8wop;
+                tr.op = length8wop;
                 tr.rst = 1'b0;
                 tr.length = 6;
                 tr.tx_data = tr.tx_data[7:0];
@@ -394,11 +393,11 @@ class driver extends uvm_driver#(transaction);
 
     //build_phase = function + super as they do not consume time 
     //virtual as skeleton is defined inside PARENT class: uvm_component 
-    virtual function build_phase(uvm_phase pahse);
-        super.build_pahse(phase);
+    virtual function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
         tr = transaction::type_id::create("driver"); //1 arg as uvm_obj
 
-        if(!(uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif))) //this means whole path: uvm_test_top.env.agent.drv
+        if(!uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif)) //this means whole path: uvm_test_top.env.agent.drv
             `uvm_error("DRV", "Unable to access interface");
     endfunction 
 
@@ -433,18 +432,18 @@ class driver extends uvm_driver#(transaction);
                     vif.parity_en   <= tr.parity_en;
                     vif.parity_type <= tr.parity_type;
                     vif.stop2       <= tr.stop2;
+                    `uvm_info("DRV", $sformatf("BAUD:%0d LEN:%0d PAR_TY:%0d PAR_EN:%0d STOP: %0d TX_DATA: %0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data), UVM_NONE); 
+                    //wait for 1 clk tick 
+                    @(posedge vif.clk);
+                    //wait for tx_done and rx_done edge
+                    @(posedge vif.tx_done);
+                    @(negedge vif.rx_done);
                 seq_item_port.item_done(tr); //send item_done to seqr and get new packet in non-blocking fashion     
-                `uvm_info("DRV", $sformatf("BAUD:%0d LEN:%0d PAR_TY:%0d PAR_EN:%0d STOP: %0d TX_DATA: %0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data), UVM_NONE); 
-                //wait for 1 clk tick 
-                @(posedge vif.clk);
-                //wait for tx_done and rx_done edge
-                @(posedge vif.tx_done);
-                @(negedge vif.rx_done);
             end 
     endtask
 
     //run phase to apply stimulus to DUT - virtual task as time is consumed
-    virtual task run(uvm_phase phase);
+    virtual task run_phase(uvm_phase phase);
         drive();
     endtask
 
@@ -464,11 +463,11 @@ class monitor extends uvm_monitor;
    endfunction 
 
     //build_phase - func + super
-    virtual function build_phase(uvm_phase phase);
+    virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
         send = new("send", this); //2 args for port
-        if(!(uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif))) //this means whole path: uvm_test_top.env.agent.mon
+        if(!uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif)) //this means whole path: uvm_test_top.env.agent.mon
             `uvm_error("MON", "Unable to access interface");
     endfunction
 
@@ -496,7 +495,7 @@ class monitor extends uvm_monitor;
                         tr.stop2       = vif.stop2;
                         @(negedge vif.rx_done); //wait for rx_done and then collect the data received
                         tr.rx_out      = vif.rx_out;
-                        `uvm_info("MON", $sformatf("BAUD:%0d, LEN:%0d, PAR_TY:%0d, PAR_EN:%0d, STOP:%0d, TX_DATA:%0d, RX_DATA:%0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data, tx.rx_out), UVM_NONE);
+                        `uvm_info("MON", $sformatf("BAUD:%0d, LEN:%0d, PAR_TY:%0d, PAR_EN:%0d, STOP:%0d, TX_DATA:%0d, RX_DATA:%0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data, tr.rx_out), UVM_NONE);
                         send.write(tr); //calling write method inside sco
                     end
             end 
@@ -518,15 +517,15 @@ class scoreboard extends uvm_scoreboard;
    endfunction 
 
     //build_phase - func + super
-    virtual function build_phase(uvm_phase phase);
+    virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         tr = transaction::type_id::create("tr"); //1 arg as uvm_obj
         recv = new("recv", this); //2 args for port
     endfunction
 
     //write method - virtual as write method skeleton is defined inside uvm_comp parent class 
-    virtual function write(transaction tr);
-        `uvm_info("SCO", $sformatf("BAUD:%0d, LEN:%0d, PAR_TY:%0d, PAR_EN:%0d, STOP:%0d, TX_DATA:%0d, RX_DATA:%0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data, tx.rx_out), UVM_NONE)
+    virtual function void write(transaction tr);
+        `uvm_info("SCO", $sformatf("BAUD:%0d, LEN:%0d, PAR_TY:%0d, PAR_EN:%0d, STOP:%0d, TX_DATA:%0d, RX_DATA:%0d", tr.baud, tr.length, tr.parity_type, tr.parity_en, tr.stop2, tr.tx_data, tr.rx_out), UVM_NONE)
         if(tr.rst == 1'b1)
             `uvm_info("SCO", "SYSTEM RESET", UVM_NONE)
         else if(tr.tx_data == tr.rx_out)
@@ -555,7 +554,7 @@ class agent extends uvm_agent;
    endfunction 
 
     //build_phase - func + super
-    virtual function build_phase(uvm_phase phase);
+    virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         cfg = uart_config::type_id::create("cfg"); //1 arg as uvm_obj
         seqr = uvm_sequencer#(transaction)::type_id::create("seqr", this); //2 arg as uvm_comp
@@ -564,7 +563,7 @@ class agent extends uvm_agent;
     endfunction
 
     //connect_phase to connect mon and sco - func + super
-    virtual function connect_phase(uvm_phase phase);
+    virtual function void connect_phase(uvm_phase phase);
         super.connect_phase(phase);
         if(cfg.is_active == UVM_ACTIVE) //if agent is active then only connect drv and seqr
             begin
@@ -589,19 +588,16 @@ class env extends uvm_env;
    endfunction 
 
     //build_phase - func + super
-    virtual function build_phase(uvm_phase phase);
+    virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         a   = agent::type_id::create("a", this); //2 args as uvm_comp
         sco = scoreboard::type_id::create("sco", this); //2 args as uvm_comp
     endfunction
 
     //connect_phase to connect mon and sco - func + super
-    virtual function connect_phase(uvm_phase phase);
+    virtual function void connect_phase(uvm_phase phase);
         super.connect_phase(phase);
-        if(cfg.is_active == UVM_ACTIVE) //if agent is active then only connect drv and seqr
-            begin
-                drv.seq_item_port.connect(seqr.seq_item_export); 
-            end
+            a.mon.send.connect(sco.recv); //connect mon to sco
     endfunction
     
 endclass
@@ -633,17 +629,16 @@ class test extends uvm_test;
 
 
     //build_phase - func + super
-    virtual function build_phase(uvm_phase phase);
+    virtual function void build_phase(uvm_phase phase);
         super.build_phase(phase);
-        //1 arg as uvm_obj
-        e         = env::type_id::create("e"); 
-        rb = rand_baud::type_id::create("rb");
-        rbs = rand_baud_with_stop::type_id::create("rbs");
+        e         = env::type_id::create("e", this); //2 args 
+        rb = rand_baud::type_id::create("rb"); //1 arg as uvm_obj
+        rbs = rand_baud_with_stop::type_id::create("rbs"); //1 arg as uvm_obj
         //SEQs with fixed length, var baud with parity
-        rb5lwp = rand_baud_len5p::type_id::create("rb5lwp"); 
-        rb6lwp = rand_baud_len6p::type_id::create("rb6lwp");
-        rb7lwp = rand_baud_len7p::type_id::create("rb7lwp");
-        rb8lwp = rand_baud_len8p::type_id::create("rb8lwp");
+        rb5lwp = rand_baud_len5p::type_id::create("rb5lwp"); //1 arg as uvm_obj
+        rb6lwp = rand_baud_len6p::type_id::create("rb6lwp"); //1 arg as uvm_obj
+        rb7lwp = rand_baud_len7p::type_id::create("rb7lwp"); //1 arg as uvm_obj
+        rb8lwp = rand_baud_len8p::type_id::create("rb8lwp"); //1 arg as uvm_obj
 
         //SEQs with fixed length, var baud without parity
         rb5lwop = rand_baud_len5::type_id::create("rb5lwop");
@@ -683,7 +678,7 @@ module tb;
         .rx_done(vif.rx_done), 
         .tx_err(vif.tx_err), 
         .rx_err(vif.rx_err),
-        .rx_data(vif.rx_data)
+        .rx_out(vif.rx_out)
     );
 
     //initialize clk
@@ -695,7 +690,7 @@ module tb;
     initial 
         begin
             //giving access of intf to drv and mon
-            uvm_config_db#(virtual uart_if)::get(null, "*", "vif", vif); //null means uvm_test_top, path will be uvm_test_top.env.agent.* i.e. env.agent.drv and env.agent.mon
+            uvm_config_db#(virtual uart_if)::set(null, "*", "vif", vif); //null means uvm_test_top, path will be uvm_test_top.env.agent.* i.e. env.agent.drv and env.agent.mon
             //run test 
             run_test("test");
         end

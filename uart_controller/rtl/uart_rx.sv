@@ -203,7 +203,7 @@ module uart_rx(
                             tick_count <= 0;    
                     end
         ////////////////////////////////////////////////////////////////////////////
-                check_first_stop :
+                done :
                     begin
                         tick_count <= 0; 
                         bit_count  <= 0;     

@@ -1,5 +1,6 @@
 vlib work
-vlog ../rtl/uart_top.sv ../tb/testbench.sv
+vlog ../rtl/uart_top.sv 
+vlog ../tb/testbench.sv
 vsim -debugDB -voptargs="+acc" work.tb
 add wave -r /tb/*
 run -all
