@@ -480,7 +480,7 @@ class monitor extends uvm_monitor;
                 @(posedge vif.clk); //wait for 1 clk tick as in drv
                 if(vif.rst)
                     begin
-                        tr.rst = 1'b1;
+                        tr.rst = vif.rst;
                         `uvm_info("MON", "SYSTEM RESET DETECTED", UVM_NONE);
                         $display("-------------------------------------------");
                     end
