@@ -402,7 +402,7 @@ class driver extends uvm_driver#(transaction);
             `uvm_error("DRV", "Unable to access interface");
     endfunction 
 
-    //2 tasks declared outside run_phase to simplify - reset_dut task and drive task
+    //2 tasks declared outside run_phase to simplify - reset_dut and drive 
     task reset_dut();
         repeat(5)
             begin
@@ -471,7 +471,6 @@ class monitor extends uvm_monitor;
         if(!(uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif))) //this means whole path: uvm_test_top.env.agent.mon
             `uvm_error("MON", "Unable to access interface");
     endfunction
-
 
     //run task to collect response from DUT
     virtual task run_phase(uvm_phase phase);
@@ -638,16 +637,74 @@ class test extends uvm_test;
         super.build_phase(phase);
         //1 arg as uvm_obj
         e         = env::type_id::create("e"); 
-        rb = rand_baud::type_id::create("rand_baud");
-        rbs = rand_baud_with_stop::type_id::create("rand_baud_with_stop");
+        rb = rand_baud::type_id::create("rb");
+        rbs = rand_baud_with_stop::type_id::create("rbs");
         //SEQs with fixed length, var baud with parity
-        
+        rb5lwp = rand_baud_len5p::type_id::create("rb5lwp"); 
+        rb6lwp = rand_baud_len6p::type_id::create("rb6lwp");
+        rb7lwp = rand_baud_len7p::type_id::create("rb7lwp");
+        rb8lwp = rand_baud_len8p::type_id::create("rb8lwp");
 
-
+        //SEQs with fixed length, var baud without parity
+        rb5lwop = rand_baud_len5::type_id::create("rb5lwop");
+        rb6lwop = rand_baud_len6::type_id::create("rb6lwop");
+        rb7lwop = rand_baud_len7::type_id::create("rb7lwop");
+        rb8lwop = rand_baud_len8::type_id::create("rb8lwop");
     endfunction
 
-    
-    
+    //run_phase to start the sequencer
+    virtual task run_phase(uvm_phase phase);
+        phase.raise_objection(this);
+            rb8lwop.start(e.a.seqr); //start calls body method inside sequence
+            #20;
+        phase.drop_objection(this);
+    endtask
+
 endclass
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//10. TESTBENCH - consists of DUT and interface instance and access to intf is given from tb
+//test class is run from tb
+module tb;
 
+    //instances 
+    uart_if vif(); //need () for interface inside tb
+    uart_top DUT(
+        .clk(vif.clk), 
+        .rst(vif.rst),
+        .tx_start(vif.tx_start), 
+        .rx_start(vif.rx_start),
+        .tx_data(vif.tx_data),
+        .baud(vif.baud),
+        .length(vif.length),
+        .parity_type(vif.parity_type), 
+        .parity_en(vif.parity_en),
+        .stop2(vif.stop2),
+        .tx_done(vif.tx_done),  
+        .rx_done(vif.rx_done), 
+        .tx_err(vif.tx_err), 
+        .rx_err(vif.rx_err),
+        .rx_data(vif.rx_data)
+    );
 
+    //initialize clk
+    initial vif.clk = 1'b0;
+
+    //clk generation
+    always #10 vif.clk = ~vif.clk; 
+
+    initial 
+        begin
+            //giving access of intf to drv and mon
+            uvm_config_db#(virtual uart_if)::get(null, "*", "vif", vif); //null means uvm_test_top, path will be uvm_test_top.env.agent.* i.e. env.agent.drv and env.agent.mon
+            //run test 
+            run_test("test");
+        end
+    
+    /*
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars;
+    end
+    */
+
+endmodule 
