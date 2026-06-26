@@ -109,21 +109,48 @@ A high-quality UART IP must detect and flag protocol violations.
 
 --------------------------------------------------------------------------
 
-<details><summary>Schematic</summary>
+<details><summary>Schematic</summary><br>
 
-The Schematics has been generated using Questasim 10.7c
+The Schematics has been generated using Questasim 10.7c.
 
 ## Clock Generator 
 
+![alt text](clk_generator/docs/Schematic_clk_generator.png)
 
+## UART Top Module 
+
+![alt text](uart_controller/docs/Schematic_UART_Controller.png)
 
 </details>
 
 --------------------------------------------------------------------------
 
+<details><summary>Simulation</summary><br>
 
+## Clock Generator Simulation Waveform 
 
+![alt text](clk_generator/docs/simulation_waveform_clk_gen.png)
 
+## UART Top module Simulation Waveform
 
+![alt text](uart_controller/docs/Simulation_waveform.png)
 
+</details>
 
+------------------------------------------------------------------------
+
+<details><summary>Console Ouput</summary><br>
+
+## Clock Generator 
+
+![alt text](clk_generator/docs/console_output_P1.png)
+![alt text](clk_generator/docs/console_output_P2.png)
+
+## UART Top module
+
+![alt text](uart_controller/docs/Console_output_P1.png)
+![alt text](uart_controller/docs/Console_output_P2.png)
+
+</details>
+
+------------------------------------------------------------------------
