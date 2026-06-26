@@ -58,5 +58,35 @@ To read this incoming data accurately, the receiver uses a technique called over
 
 --------------------------------------------------------------------
 
+# Hardware Architecture and FSM Design
+
+The RTL design of the UART is typically divided into **three primary modules:**
+
+## Clock Generator 
+
+This module takes the target baud rate (Baud[16:0]), the system clock (Fclk), and the reset signal (rst) to output two distinct clocks: tx_clk for the transmitter, and rx_clk (the 16x oversampled clock) for the receiver.
+
+## Transmitter (Uart_tx)
+
+- The transmitter is responsible for parallel-to-serial conversion
+- It is governed by a 7-state Finite State Machine (FSM):
+
+    idle $\rightarrow$ start_bit (drives low) $\rightarrow$ send_data $\rightarrow$ send_parity $\rightarrow$ send_first_stop (drives high) $\rightarrow$ send_sec_stop $\rightarrow$ done
+
+## Receiver (Uart_rx)
+
+- The receiver is responsible for serial-to-parallel conversion using the 16x oversampled clock.
+- It is also governed by a 7-state FSM that utilizes the oversampled clock to recover the data:
+  
+  idle $\rightarrow$ start_bit (validates the low transition) $\rightarrow$ recv_data $\rightarrow$ check_parity $\rightarrow$ check_first_stop $\rightarrow$ check_sec_stop $\rightarrow$ done
+
+--------------------------------------------------------------------------
+
+
+
+
+
+
+
 
 
