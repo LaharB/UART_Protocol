@@ -5,11 +5,23 @@ This project showcases the design and verification of -
 
 The verification of the UART Controller has been performed by an UVM-based testbench architecture using Siemens Questa Sim 10.7 Simulator.
 
+--------------------------------------------------------------------------
+
+# Technical Specifications & Features
+
+The UART Controller has the following features:
+
+- Supported Baud Rates: 4800, 9600, 14400, 19200, 38400, 57600
+- Configurable data widths from 5 to 8 bits
+- Parity support: Even and Odd
+- Stop bit configurations: 1 and 2 bits supported
+
 --------------------------------------------------------------------
 
 # Protocol Overview and Charateristics
 
 - UART stands for Universal Asynchronous Receiver and Transmitter. It is a hardware communication protocol that allows two digital devices (such as microcontrollers, sensors, or computers) to exchange data serially, bit-by-bit. 
+- Full-Duplex: It can transmit and receive data simultaneously using two dedicated data lines.
 - Communication occurs over just two wires: one for transmitting (TX) and one for receiving (RX). It is considered **asynchronous** because the transmitter and receiver do not share a common clock signal.
 - They rely on a pre-agreed transmission speed (Baud Rate) to decode the data.
   
@@ -84,7 +96,30 @@ This module takes the target baud rate (Baud[16:0]), the system clock (Fclk), an
 
 --------------------------------------------------------------------------
 
+# Standard Error Conditions
 
+A high-quality UART IP must detect and flag protocol violations.
+
+- **Framing Error:** The expected logic-high Stop Bit was not detected at the end of the frame. This typically indicates a baud rate mismatch or severe line noise.
+- **Parity Error** : The calculated parity of the received payload does not match the received parity bit, indicating data corruption during transit.
+- **Overrun Error:** The receiver's internal buffer (or FIFO) is full, and a new serial byte arrives before the host processor has read the previous data, causing data loss.
+- **Break Condition:** The RX line is held at logic-low for a duration longer than an entire frame transmission.
+
+**NOTE: Here I have implemeted only 2 error checks, namely Framing Error and Parity Error.**
+
+--------------------------------------------------------------------------
+
+<details><summary>Schematic</summary>
+
+The Schematics has been generated using Questasim 10.7c
+
+## Clock Generator 
+
+
+
+</details>
+
+--------------------------------------------------------------------------
 
 
 
