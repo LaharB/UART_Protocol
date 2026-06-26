@@ -26,6 +26,9 @@ A basic full-duplex UART connection is simple: each device’s TX pin connects t
 # Data Framing Structure
 
 - Data framing defines how a single data byte is structured for transmission. This ensures that the receiving device can correctly identify where a data packet begins and ends.
+
+![alt text](uart_controller/docs/UART_Data_Frame.png)
+
 - When the line is idle (no data is being sent), it is held at a logic-high state. The framing process converts parallel data from the CPU into a serial frame, which typically consists of:
 
 | Bit type | Description |
