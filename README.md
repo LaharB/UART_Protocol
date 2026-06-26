@@ -27,10 +27,12 @@ A basic full-duplex UART connection is simple: each device’s TX pin connects t
 
 - Data framing defines how a single data byte is structured for transmission. This ensures that the receiving device can correctly identify where a data packet begins and ends.
 
-![alt text](uart_controller/docs/UART_Data_Frame.png)
-
 - UART Frame Format:
 **Idle high -> Start low -> Data bits LSB first -> Optional parity -> Stop high**
+
+![alt text](uart_controller/docs/UART_Data_Frame.png)
+
+- Each field occupies one bit time unless a configuration uses multiple stop bits or a different data width.
 
 - When the line is idle (no data is being sent), it is held at a logic-high state. The framing process converts parallel data from the CPU into a serial frame, which typically consists of:
 
