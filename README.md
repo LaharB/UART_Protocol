@@ -157,10 +157,12 @@ The Schematics has been generated using Questasim 10.7c.
 
 ## Simulation Steps
 
-To compile the RTL and simulate the design , run the run.do file in Questasim.
+To compile the RTL and simulate the design , run the `run.do` file in Questasim.
 
 ------------------------------------------
 
 ## References & Acknowledgments
+
+The following blog has been followed for theory and practical implementation of this UART project.
 
 - [VLSI Verify Blog on UART Protocol](https://vlsiverify.com/)
