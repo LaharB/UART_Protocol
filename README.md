@@ -1,3 +1,5 @@
+# UVM based Verification of UART Protocol 
+
 This project showcases the design and verification of - 
 
 - an UART Clk Generator that can produce variable transmitter clk and receiver clk signals according to variable baud rate.
