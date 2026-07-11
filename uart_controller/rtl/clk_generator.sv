@@ -62,8 +62,11 @@ module clk_gen(
 - so at 5208th clk tick, tx_count is at 5207 so if block runs and tx_count inc to 5208
 - at the 5209th clk tick, count value is 5208 so again if block runs and tx_count inc to 5209 
 - at the 5210th clk tick, count value is 5209 so else block runs and tx_count becomes 0
-- Also tx_clk goes from 0 to 1 , similarly after another 5210 clk ticks, tx_clk goes from 1 to 0 
-- thus we one complete cycle of tx_clk in 5208 + 1 + 5208 + 1 = 10418 clk ticks of faster clk 
+- Also tx_clk goes from 0 to 1 , similarly after another 5210 clk ticks, tx_clk goes from 1 to 0
+- So compared to (tx_count<tx_max/2) used in clk generator which 1 extra clk tick for tx_clk going from 0 to 1
+- and then again 1 extra clk tick for going from 1 to 0
+- i.e
+- thus we one complete cycle of tx_clk in 5208 + 2 + 5208 + 2 = 10418 clk ticks of faster clk 
 */
     always@(posedge clk) begin
         if(rst) begin
