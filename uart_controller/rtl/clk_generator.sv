@@ -65,7 +65,8 @@ module clk_gen(
 - Also tx_clk goes from 0 to 1 , similarly after another 5210 clk ticks, tx_clk goes from 1 to 0
 - So compared to (tx_count<tx_max/2) used in clk generator which 1 extra clk tick for tx_clk going from 0 to 1
 - and then again 1 extra clk tick for going from 1 to 0
-- i.e
+- i.e a total of tx_max/2 + 1 + tx_max/2 + 1 clk ticks of the faster clk tick
+- But here we have tx_max/2 + 2 + tx_max/2 + 2 clk ticks of the faster clk 
 - thus we one complete cycle of tx_clk in 5208 + 2 + 5208 + 2 = 10418 clk ticks of faster clk 
 */
     always@(posedge clk) begin
